@@ -1,6 +1,7 @@
 #!/Users/aritrog/Documents/chatpe/Misc Code/pdfenv/bin/python
 import sys
 from bs4 import BeautifulSoup as bs
+from flask_cors import CORS
 
 from pdfminer.pdfdocument import PDFDocument
 from pdfminer.pdfparser import PDFParser
@@ -17,8 +18,10 @@ def html_parser(html):
     soup = bs(html, 'html.parser')
     for p in soup.find_all('p'):
         text = p.get_text()
-        if 'Shashank' in text or 'All India Reporter' in text or '© Copyright' in text or '@page' in text or 'Annotation' in text or 'Para' in text:
+        if 'Shashank' in text or 'All India Reporter' in text or '© Copyright' in text or 'Annotation' in text or 'Para' in text:
             p.decompose()
+    for p in soup.find_all('p', {'style': lambda s: 'text-align:right' in s}):
+        p.decompose()
     for i, span in enumerate(soup.find_all('span')):
         if i == 0:
             span['text'] = '1111'
@@ -45,13 +48,14 @@ def gen_html_string(fp):
         interpreter.process_page(page)
     html = device.html
     device.close()
-    # with open('air2.html', 'w', encoding='utf-8') as new_f:
-    #     new_f.write(html_parser(html))
-    return html_parser(html)
+    parsed_html = html_parser(html)
+    with open('air2.html', 'w', encoding='utf-8') as new_f:
+        new_f.write(parsed_html)
+    return parsed_html
 
 from flask import Flask, request
 app = Flask(__name__)
-
+CORS(app)
 
 @app.route("/pdf", methods=['POST'])
 def handle_pdf():
