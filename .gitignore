@@ -27,6 +27,7 @@ cases_1/*
 .venv/
 *.pyc
 *.pdf
+*.csv
 cases_2/*
 share/python-wheels/
 *.egg-info/
