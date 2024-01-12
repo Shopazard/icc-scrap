@@ -282,10 +282,11 @@ class HTMLConverter(PDFConverter):
     def place_text(self, color, text, x, y, size):
         color = self.text_colors.get(color)
         if color is not None:
-            self.write('<span style="color:%s; font-size:%dpx;">' %
-                       (color, x*self.scale, (self._yoffset-y)*self.scale, size*self.scale*self.fontscale))
-            self.write_text(text)
-            self.write('</span>\n')
+            if size*self.scale*self.fontscale > 11:
+                self.write('<span style="color:%s; font-size:%dpx;">' %
+                        (color, x*self.scale, (self._yoffset-y)*self.scale, size*self.scale*self.fontscale))
+                self.write_text(text)
+                self.write('</span>\n')
         return
 
     def begin_div(self, color, borderwidth, x, y, w, h, writing_mode=False):
@@ -304,13 +305,14 @@ class HTMLConverter(PDFConverter):
 
     def put_text(self, text, fontname, fontsize):
         font = (fontname, fontsize)
-        if font != self._font:
-            if self._font is not None:
-                self.write('</span>')
-            self.write('<span style="font-size:%dpx">' %
-                (fontsize * self.scale * self.fontscale))
-            self._font = font
-        self.write_text(text)
+        if fontsize * self.scale * self.fontscale > 11:
+            if font != self._font:
+                if self._font is not None:
+                    self.write('</span>')
+                self.write('<span style="font-size:%dpx">' %
+                    (fontsize * self.scale * self.fontscale))
+                self._font = font
+            self.write_text(text)
         return
 
     def put_newline(self):

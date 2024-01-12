@@ -20,6 +20,14 @@ parts/
 sdist/
 var/
 wheels/
+cases/
+cases/*
+cases_1/
+cases_1/*
+.venv/
+*.pyc
+*.pdf
+cases_2/*
 share/python-wheels/
 *.egg-info/
 .installed.cfg
