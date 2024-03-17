@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resume Viewer</title>
+</head>
+<body>
+    <h1>Viewing Resume</h1>
+    {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% else %}
+        <iframe src="{{ resume_link }}" width="100%" height="600px"></iframe>
+    {% endif %}
+</body>
+</html>

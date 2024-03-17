@@ -1,0 +1,2 @@
+{$and:[{synopsis:{$exists:true}},{synopsis:{$ne:"NA"}},{synopsis:{$ne:""}},{synopsis:{$ne:"Not available"}}]}
+{$and:[{tags:{$exists:true}},{tags:{$ne:"NA"}},{tags:{$ne:""}},{tags:{$ne:"Not available"}}]}
