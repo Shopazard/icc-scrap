@@ -7,6 +7,7 @@ import dotenv
 import os
 import json
 import sys
+import time
 
 dotenv.load_dotenv()
 
@@ -60,12 +61,12 @@ def tagger(limit: int = -1, start: int = 0):
     query = {'$or': [{'tags': {'$eq': []}}, {'tags': {'$exists': False}}, {'tags': {'$eq': ''}}, {'tags': {'$eq': 'NA'}}, {'tags': {'$eq': 'Not available'}}]}
     t1 = datetime.now()
     x = 0
-    num_erred, num_failed, num_completed = 0, 0, 0
+    num_erred, num_failed, num_completed = len(erred_entries), 0, 0
     last = ''
     while limit == -1 or x < limit:
         case = [y for y in db.find(query).skip(start + num_erred + num_failed).limit(1)][0]
-        if str(case['_id']) in erred_entries or str(case['_id']) == last:
-            num_erred += 1
+        if str(case['_id']) == last:
+            # num_erred += 1
             continue
         last = ''
         try:
@@ -74,6 +75,8 @@ def tagger(limit: int = -1, start: int = 0):
             print(e)
             status = 'ERR'
             num_erred += 1
+        except Exception as e:
+            time.sleep(30)
         else:
             res = db.update_one({"uniquelink": case['uniquelink']},{"$set": {"tags": tags}})
             if res.modified_count == res.matched_count:
