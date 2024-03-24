@@ -7,12 +7,13 @@ import dotenv
 import os
 import json
 import sys
+import time
 
 dotenv.load_dotenv()
 
 MONGO_USER_NAME=os.getenv('MONGO_USER_NAME')
 MONGO_USER_PWD=os.getenv('MONGO_USER_PWD')
-GCLOUD_PROJECT = "rich-solstice-417107"
+GCLOUD_PROJECT = os.getenv('PROJECT_NAME')
 
 uri = f'mongodb+srv://{MONGO_USER_NAME}:{quote_plus(MONGO_USER_PWD)}@cluster0.otdmcnh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 client = pymongo.MongoClient(uri)
@@ -67,12 +68,12 @@ def summarizer(limit: int = -1, start: int = 0):
     query = {'$or':[{'synopsis':{'$exists': False}},{'synopsis':{'$eq':"NA"}},{'synopsis':{'$eq':""}},{'synopsis':{'$eq':"Not available"}}]}
     t1 = datetime.now()
     x = 0
-    num_erred, num_failed, num_completed = 0, 0, 0
+    num_erred, num_failed, num_completed = len(erred_entries), 0, 0
     last = ''
     while limit == -1 or x < limit:
         case = [y for y in db.find(query).skip(start + num_erred + num_failed).limit(1)][0]
-        if str(case['_id']) in erred_entries or str(case['_id']) == last:
-            num_erred += 1
+        if str(case['_id']) == last:
+            # num_erred += 1
             continue
         last = ''
         try:
@@ -81,6 +82,11 @@ def summarizer(limit: int = -1, start: int = 0):
             print(e)
             status = 'ERR'
             num_erred += 1
+        except Exception as e:
+            print('Encountered err.. going to sleep...', e)
+            time.sleep(30)
+            status = 'TIMEOUT'
+            continue
         else:
             res = db.update_one({"uniquelink": case['uniquelink']},{"$set": {"synopsis": synopsis}})
             if res.modified_count == res.matched_count:

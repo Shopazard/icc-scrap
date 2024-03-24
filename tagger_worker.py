@@ -13,7 +13,7 @@ dotenv.load_dotenv()
 
 MONGO_USER_NAME=os.getenv('MONGO_USER_NAME')
 MONGO_USER_PWD=os.getenv('MONGO_USER_PWD')
-GCLOUD_PROJECT = "rich-solstice-417107"
+GCLOUD_PROJECT = os.getenv('PROJECT_NAME')
 
 uri = f'mongodb+srv://{MONGO_USER_NAME}:{quote_plus(MONGO_USER_PWD)}@cluster0.otdmcnh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 client = pymongo.MongoClient(uri)
@@ -76,7 +76,10 @@ def tagger(limit: int = -1, start: int = 0):
             status = 'ERR'
             num_erred += 1
         except Exception as e:
+            print('Encountered err.. going to sleep...', e)
             time.sleep(30)
+            status = 'TIMEOUT'
+            continue
         else:
             res = db.update_one({"uniquelink": case['uniquelink']},{"$set": {"tags": tags}})
             if res.modified_count == res.matched_count:
