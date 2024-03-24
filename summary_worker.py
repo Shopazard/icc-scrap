@@ -19,8 +19,11 @@ uri = f'mongodb+srv://{MONGO_USER_NAME}:{quote_plus(MONGO_USER_PWD)}@cluster0.ot
 client = pymongo.MongoClient(uri)
 db = client.Resource.raw
 
-def get_build_context(prompt):
-    vertexai.init(project=GCLOUD_PROJECT, location="asia-southeast1")
+regions = ['us-west1', 'us-west2', 'us-west3', 'us-west4', 'us-central1', 'us-south1']
+
+
+def get_build_context(prompt, region_index: int):
+    vertexai.init(project=GCLOUD_PROJECT, location=regions[region_index])
     parameters = {
         "candidate_count": 1,
         "max_output_tokens": 4000,
@@ -35,7 +38,7 @@ def get_build_context(prompt):
     return response.text.replace("```html","").replace("```","")
 
 
-def gen_summarizer(data):
+def gen_summarizer(data, region_index: int):
     return get_build_context(f"""
         Summarise the following legal text {data}, into the following format:
         Facts
@@ -44,7 +47,7 @@ def gen_summarizer(data):
         Respondent Arguments
         Court Reasoning
         Order
-    """)
+    """, region_index)
 
 
 completed = open(sys.argv[1], 'a')
@@ -77,7 +80,7 @@ def summarizer(limit: int = -1, start: int = 0):
             continue
         last = ''
         try:
-            synopsis = gen_summarizer(case['judgement'])
+            synopsis = gen_summarizer(case['judgement'], x % len(regions))
         except InvalidArgument as e:
             print(e)
             status = 'ERR'
